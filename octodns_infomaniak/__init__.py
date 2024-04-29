@@ -48,14 +48,6 @@ class InfomaniakClient(object):
         res.raise_for_status()
         return res.json()
 
-    # def domains(self):
-    #     path = "/1/product/domain"
-    #     return self._request("GET", path)
-
-    # def domain(self, name):
-    #     path = f"/1/product/domain/{name}/dns"
-    #     return self._request("GET", path)
-
     def records(self, domain_name):
         domain_name = domain_name.rstrip(".")
         path = f"/1/domain/{domain_name}/dns/record"
@@ -99,7 +91,7 @@ class InfomaniakProvider(BaseProvider):
 
             if _type not in self.SUPPORTS:
                 self.log.warning(
-                    f"populate: skipping unsupported {_type} {_name}.scouthosting.net record"
+                    f"populate: skipping unsupported {_type} {_name}.{zone} record"
                 )
                 continue
             values[_name][_type].append(record)
@@ -187,13 +179,6 @@ class InfomaniakProvider(BaseProvider):
         desired = plan.desired
         changes = plan.changes
         self.log.debug("_apply: zone=%s, len(changes)=%d", desired.name, len(changes))
-
-        # domain_name = desired.name[:-1]
-        # try:
-        #     self._client.domain(domain_name)
-        # except InfomaniakClientException:
-        #     self.log.debug("_apply:   no matching zone, creating domain")
-        #     # self._client.domain_create(domain_name)
 
         for change in changes:
             class_name = change.__class__.__name__.lower()
