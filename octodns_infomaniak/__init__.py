@@ -169,6 +169,9 @@ class InfomaniakProvider(BaseProvider):
         existing = changes.existing
         zone = existing.zone
 
+        if existing.name == "":
+            existing.name = "."
+
         for record in self.zone_records(zone):
             if existing.name == record["source"] and existing._type == record["type"]:
                 self._client.record_delete(zone.name[:-1], record["id"])
