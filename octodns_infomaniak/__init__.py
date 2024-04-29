@@ -65,7 +65,7 @@ class InfomaniakClient(object):
 class InfomaniakProvider(BaseProvider):
     SUPPORTS_GEO = False
     SUPPORTS_DYNAMIC = False
-    SUPPORTS = set(("A", "AAAA", "CNAME"))
+    SUPPORTS = set(("A", "AAAA", "CNAME", "MX"))
 
     def __init__(self, id, token, *args, **kwargs):
         self.log = logging.getLogger(f"InfomaniakProvider[{id}]")
@@ -134,9 +134,21 @@ class InfomaniakProvider(BaseProvider):
     def _data_for_generic(self, _type, records):
         return {"ttl": records[0]["ttl"], "type": _type, "value": records[0]["target"]}
 
+    def _data_for_MX(self, _type, records):
+        values = []
+        for record in records:
+            values.append(
+                {
+                    "preference": record["priority"],
+                    "exchange": f'{record["target"]}',
+                }
+            )
+        return {"ttl": records[0]["ttl"], "type": _type, "values": values}
+
     _data_for_A = _data_for_generic
     _data_for_AAAA = _data_for_generic
     _data_for_CNAME = _data_for_generic
+    _data_for_MX = _data_for_MX
 
     def _params_for_generic(self, record):
         yield {
@@ -155,9 +167,19 @@ class InfomaniakProvider(BaseProvider):
                 "type": record._type,
             }
 
+    def _params_for_MX(self, record):
+        for value in record.values:
+            yield {
+                "target": str(value.preference) + " " + value.exchange,
+                "source": record.name,
+                "ttl": record.ttl,
+                "type": record._type,
+            }
+
     _params_for_A = _params_for_multiple
     _params_for_AAAA = _params_for_multiple
     _params_for_CNAME = _params_for_generic
+    _params_for_MX = _params_for_MX
 
     def _apply_create(self, changes):
         new = changes.new
