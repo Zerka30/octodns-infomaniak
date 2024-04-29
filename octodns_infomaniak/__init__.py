@@ -65,7 +65,7 @@ class InfomaniakClient(object):
 class InfomaniakProvider(BaseProvider):
     SUPPORTS_GEO = False
     SUPPORTS_DYNAMIC = False
-    SUPPORTS = set(("A", "AAAA"))
+    SUPPORTS = set(("A", "AAAA", "CNAME"))
 
     def __init__(self, id, token, *args, **kwargs):
         self.log = logging.getLogger(f"InfomaniakProvider[{id}]")
@@ -136,6 +136,7 @@ class InfomaniakProvider(BaseProvider):
 
     _data_for_A = _data_for_generic
     _data_for_AAAA = _data_for_generic
+    _data_for_CNAME = _data_for_generic
 
     def _params_for_generic(self, record):
         yield {
@@ -156,6 +157,7 @@ class InfomaniakProvider(BaseProvider):
 
     _params_for_A = _params_for_multiple
     _params_for_AAAA = _params_for_multiple
+    _params_for_CNAME = _params_for_generic
 
     def _apply_create(self, changes):
         new = changes.new
